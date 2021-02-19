@@ -1,0 +1,31 @@
+#content{
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+#blocklyDiv{
+    max-width: 800px;
+    height: 600px;
+    width: 60%;    
+    margin: 5px;
+}
+
+#code{
+    width: 450px; 
+    padding: 5px;
+    margin-left: 10px;
+}
+
+#run_btn{
+    float: right;
+    margin-right: 5px;
+}
+
+#toolbox{
+    display: none;
+}
+
+#startBlocks{
+    display: none;
+}
