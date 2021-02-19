@@ -1,0 +1,7 @@
+@media all and (max-width: 1300px) {
+    #blocklyDiv{
+        height: 400px;
+        width: 60%;    
+        margin: 5px;
+    }
+}
