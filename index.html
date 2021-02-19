@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Py_tes</title>
+<link rel="icon" href="favicon2.ico">
+<link rel="stylesheet" href="stylesheet.css">
+<link rel="stylesheet" href="responsive.css">
+
+</head>
+<body>
+<div id="content">
+  <div id="blocklyDiv"></div>
+  <div>
+    <div id="code"></div>
+    <button id="run_btn" onclick="runCode();">実行</button>
+  </div>
+</div>
+
+
+<!-- 表示する block について -->
+<xml id="toolbox" style="display: none">
+  <category name="テキスト" colour="160">
+    <block type="text_print">
+      <value name="TEXT">
+        <shadow type="text">
+          <field name="TEXT">abc</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text"></block>
+  </category>
+  <category name="条件・論理" colour="210">
+    <block type="ifap"></block>
+    <block type="elifap"></block>
+    <block type="elseap"></block>
+    <block type="boolap"></block>
+    <block type="boolap2"></block>
+  </category>
+  <category name="繰り返し" colour="120">
+    <!--<block type="controls_repeat_ext">
+      <value name="TIMES">
+        <shadow type="math_number">
+          <field name="NUM">10</field>
+        </shadow>
+      </value>
+    </block>--> 
+    <block type="controls_for">
+      <value name="FROM">
+        <shadow type="math_number">
+          <field name="NUM">0</field>
+        </shadow>
+      </value>
+      <value name="TO">
+        <shadow type="math_number">
+          <field name="NUM">10</field>
+        </shadow>
+      </value>
+      <value name="BY">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+    </block>
+    <!-- <block type="controls_whileUntil"></block> -->
+  </category>
+
+  <category name="演算" colour="230">
+    <block type="math_number">
+      <field name="NUM">123</field>
+    </block>
+    <block type="math_arithmetic">
+      <value name="A">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+      <value name="B">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_modulo">
+      <value name="DIVIDEND">
+        <shadow type="math_number">
+          <field name="NUM">64</field>
+        </shadow>
+      </value>
+      <value name="DIVISOR">
+        <shadow type="math_number">
+          <field name="NUM">10</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_random_int">
+      <value name="FROM">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+      <value name="TO">
+        <shadow type="math_number">
+          <field name="NUM">100</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_random_float"></block>
+  </category>
+
+  <sep></sep>
+  <category name="変数" colour="330" custom="VARIABLE"></category>
+</xml>
+ 
+<xml id="startBlocks" style="display: none">
+  <block type="text_print" id="textpre" x="35" y="21">
+    <value name="TEXT">
+      <shadow type="text" id="textsha">
+        <field name="TEXT">Hello, World</field>
+      </shadow>
+    </value>
+  </block>
+</xml>
+
+
+
+<!-- JSの記述 -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/blockly@1.0.0/blockly_compressed.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/blockly@1.0.0/blocks_compressed.min.js"></script> -->
+<!-- <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script> -->
+<script src="./blockly_compressed.js"></script>
+<script src="./blocks_compressed.js"></script>
+<script src="./python_compressed.js"></script>
+<script src="./ja.js"></script>
+<!--<script src="./python.js"></script>-->
+<!--<script src="./text.js"></script>-->
+<script src="./run_prettify.js"></script>
+<script src="./append.js"></script>
+<script src="./append_block.js"></script>
+
+<script>
+var KEY = 'BlocklyStorage';
+var run_flag = 0;
+
+var workspace = Blockly.inject('blocklyDiv', {
+  toolbox: document.getElementById('toolbox'),
+  trashcan: true
+});
+
+// webサイトを開いたときの動作。
+window.setTimeout(function () {
+  if ('localStorage' in window && window.localStorage[KEY]) {
+    restoreBlocks();
+  } else {
+    Blockly.Xml.domToWorkspace(document.querySelector('#startBlocks'), workspace);
+  }
+}, 0);
+
+
+// 変換後のテキスト言語を表示
+function myUpdateFunction(event) {
+  var code = Blockly.Python.workspaceToCode(workspace);
+  document.getElementById('code').innerHTML = '<pre class="prettyprint lang-js" style="margin: 0px"><span style="font-size:1.1em">' + code + '</span></pre>';
+  PR.prettyPrint();
+  backupBlocks();
+}
+
+workspace.addChangeListener(myUpdateFunction);
+
+
+function backupBlocks() {
+  if (!'localStorage' in window) return;
+  var xml = Blockly.Xml.workspaceToDom(workspace);
+  var text = Blockly.Xml.domToText(xml);
+  window.localStorage.setItem(KEY, text);
+}
+
+function restoreBlocks() {
+  var xml = Blockly.Xml.textToDom(window.localStorage[KEY]);
+    Blockly.Xml.domToWorkspace(xml, workspace);
+}
+
+function runCode() {
+  run_flag = 1;
+  window.LoopTrap = 1000;
+  Blockly.Python.INFINITE_LOOP_TRAP = 'if(--window.LoopTrap == 0) throw "Infinite loop.";\n';
+  var code = Blockly.Python.workspaceToCode(workspace);
+  // console.log(code);
+  Blockly.Python.INFINITE_LOOP_TRAP = null;
+  try {
+    eval(code);
+  } catch (e) {
+    alert('Bad code: ' + e);
+  }
+  run_flag = 0;
+}
+</script>
+</body>
+</html>
